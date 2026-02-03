@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+import subprocess
+import sys
+import os
+
+# المسار الصحيح للمشروع
+PROJECT_DIR = os.path.join(os.getcwd(), "project-service")
+
+# تأكيد إنو الفولدر موجود
+if not os.path.isdir(PROJECT_DIR):
+    print("❌ project-service directory not found")
+    sys.exit(1)
+
+# ضبط PYTHONPATH
+os.environ["PYTHONPATH"] = PROJECT_DIR
+
+print("Running code format (isort + black)...")
+subprocess.run(
+    [sys.executable, "-m", "isort", PROJECT_DIR],
+    check=True,
+)
+subprocess.run(
+    [sys.executable, "-m", "black", PROJECT_DIR],
+    check=True,
+)
+
+print("Running lint check...")
+lint = subprocess.run(
+    [sys.executable, "-m", "flake8", PROJECT_DIR],
+)
+if lint.returncode != 0:
+    print("❌ Lint failed. Commit aborted.")
+    sys.exit(1)
+
+print("Running tests...")
+tests = subprocess.run(
+    [sys.executable, "-m", "pytest", "-s"],
+    cwd=PROJECT_DIR,   # ⭐⭐⭐ هاي أهم سطر
+)
+if tests.returncode != 0:
+    print("❌ Tests failed. Commit aborted.")
+    sys.exit(1)
+
+print("✅ All checks passed. Commit allowed.")
+sys.exit(0)
