@@ -1,5 +1,7 @@
-from .mongo_storage import MongoStorage
 import os
+
+from .mongo_storage import MongoStorage
+
 
 class ProjectService:
     def __init__(self, storage=None):

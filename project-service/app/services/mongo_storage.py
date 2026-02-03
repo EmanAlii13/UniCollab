@@ -1,12 +1,14 @@
-from pymongo import MongoClient
 import os
+
 from dotenv import load_dotenv
+from pymongo import MongoClient
 
 load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = "unicollab"
 COLLECTION_NAME = "projects"
+
 
 class MongoStorage:
     def __init__(self):
@@ -32,11 +34,13 @@ class MongoStorage:
         for project_id, project in data["projects"].items():
             self.collection.update_one(
                 {"_id": project_id},
-                {"$set": {
-                    "title": project["title"],
-                    "desc": project["desc"],
-                    "leader": project["leader"],
-                    "members": project["members"]
-                }},
-                upsert=True
+                {
+                    "$set": {
+                        "title": project["title"],
+                        "desc": project["desc"],
+                        "leader": project["leader"],
+                        "members": project["members"],
+                    }
+                },
+                upsert=True,
             )
