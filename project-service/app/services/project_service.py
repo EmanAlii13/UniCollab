@@ -1,12 +1,6 @@
-from .mongo_storage import MongoStorage
-
-
 class ProjectService:
-    def __init__(self, storage=None):
-        if storage is None:
-            self.storage = MongoStorage()
-        else:
-            self.storage = storage
+    def __init__(self, storage):
+        self.storage = storage
 
         try:
             self.data = self.storage.load()
