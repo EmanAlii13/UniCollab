@@ -34,12 +34,7 @@ def main():
     args = parser.parse_args()
 
     # ✅ تخزين JSON فقط (بدون Mongo)
-    data_file = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "data",
-        "projects.json"
-    )
+    data_file = os.path.join(os.path.dirname(__file__), "..", "data", "projects.json")
 
     storage = JSONStorage(data_file)
     service = ProjectService(storage)
@@ -48,25 +43,15 @@ def main():
     # Commands
     # -----------------------------
     if args.command == "create-project":
-        project_id = service.create_project(
-            args.title,
-            args.desc,
-            args.leader
-        )
+        project_id = service.create_project(args.title, args.desc, args.leader)
         print(project_id)  # مهم جداً للـ test
 
     elif args.command == "join-project":
-        result = service.join_project(
-            args.project_id,
-            args.user_id
-        )
+        result = service.join_project(args.project_id, args.user_id)
         print(result)
 
     elif args.command == "approve-request":
-        result = service.approve_request(
-            args.project_id,
-            args.user_id
-        )
+        result = service.approve_request(args.project_id, args.user_id)
         print(result)
 
 

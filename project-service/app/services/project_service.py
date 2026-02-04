@@ -23,8 +23,8 @@ class ProjectService:
             "title": title,
             "desc": desc,
             "leader": leader,
-            "members": [leader],      # القائد عضو تلقائياً
-            "pending_requests": []    # طلبات الانضمام
+            "members": [leader],  # القائد عضو تلقائياً
+            "pending_requests": [],  # طلبات الانضمام
         }
 
         self.save_data()
