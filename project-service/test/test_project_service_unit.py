@@ -1,7 +1,9 @@
 # tests/test_project_service_unit.py
 
 from unittest.mock import MagicMock
+
 from app.services.project_service import ProjectService
+
 
 def test_create_project():
     # 1️⃣ Mock storage

@@ -1,6 +1,7 @@
 import json
 import os
 
+
 class JSONStorage:
     def __init__(self, path):
         self.path = path

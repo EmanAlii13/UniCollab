@@ -1,5 +1,5 @@
-from pymongo import MongoClient
 from bson.objectid import ObjectId
+from pymongo import MongoClient
 
 class ProjectService:
     def __init__(self, storage=None, mongo_uri=None, db_name="project_db"):
@@ -39,17 +39,25 @@ class ProjectService:
             return project_id
 
     # -----------------------------
-    # GET PROJECTS
+    # GET ALL PROJECTS
     # -----------------------------
     def get_all_projects(self):
         if self.projects is not None:
-            return {str(p["_id"]): p for p in self.projects.find()}
+            projects = list(self.projects.find())
+            for p in projects:
+                p["_id"] = str(p["_id"])  # تحويل ObjectId لـ string
+            return {p["_id"]: p for p in projects}
         else:
             return self.data["projects"]
 
+    # -----------------------------
+    # GET SINGLE PROJECT
+    # -----------------------------
     def get_project(self, project_id):
         if self.projects is not None:
             project = self.projects.find_one({"_id": ObjectId(project_id)})
+            if project:
+                project["_id"] = str(project["_id"])
             return project
         else:
             return self.data["projects"].get(project_id)
@@ -83,7 +91,7 @@ class ProjectService:
             return True
 
     # -----------------------------
-    # ADD MEMBER (max 3 members)
+    # ADD MEMBER
     # -----------------------------
     def add_member(self, project_id, username):
         if self.projects is not None:
