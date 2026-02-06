@@ -1,5 +1,3 @@
-import os
-
 from .mongo_storage import MongoStorage
 
 
