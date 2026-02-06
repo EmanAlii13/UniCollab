@@ -33,14 +33,18 @@ def main():
 
     args = parser.parse_args()
 
-    # ✅ فقط JSON Storage للـ CLI
-    data_file = os.path.join(os.path.dirname(__file__), "..", "data", "projects.json")
+    # ✅ دعم ملف data مخصص (للاختبارات)
+    data_file = os.getenv(
+        "PROJECTS_DATA_FILE",
+        os.path.join(os.path.dirname(__file__), "..", "data", "projects.json"),
+    )
+
     storage = JSONStorage(data_file)
     service = ProjectService(storage)
 
     if args.command == "create-project":
         project_id = service.create_project(args.title, args.desc, args.leader)
-        print(f"Project created successfully with ID: {project_id}")  # مهم للاختبارات
+        print(f"Project created successfully with ID: {project_id}")
 
     elif args.command == "join-project":
         result = service.join_project(args.project_id, args.user_id)
