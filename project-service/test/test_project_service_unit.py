@@ -1,14 +1,21 @@
+from unittest.mock import MagicMock
+
 from app.services.project_service import ProjectService
-from app.services.storage import JSONStorage
 
 
-def test_create_project(tmp_path):
-    db = tmp_path / "test.json"
-    storage = JSONStorage(str(db))
-    service = ProjectService(storage)
+def test_create_project():
+    # 1️⃣ Mock storage
+    mock_storage = MagicMock()
+    mock_storage.load.return_value = {"projects": {}}
 
+    # 2️⃣ Inject mock
+    service = ProjectService(mock_storage)
+
+    # 3️⃣ Act
     project_id = service.create_project("AI", "ML", "ayat")
 
-    data = storage.load()
-    assert project_id in data["projects"]
-    assert data["projects"][project_id]["leader"] == "ayat"
+    # 4️⃣ Assert logic
+    assert project_id == "1"
+
+    # 5️⃣ Assert interaction
+    mock_storage.save.assert_called_once()
