@@ -17,6 +17,15 @@
         "ayat"
       ],
       "pending_requests": []
+    },
+    "3": {
+      "title": "AI Project",
+      "desc": "ML System",
+      "leader": "ayat",
+      "members": [
+        "ayat"
+      ],
+      "pending_requests": []
     }
   }
 }
