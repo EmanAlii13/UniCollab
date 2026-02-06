@@ -1,12 +1,16 @@
 from app.services.project_service import ProjectService
 
+
 class MockStorage:
     def __init__(self):
         self.data = {"projects": {}}
+
     def load(self):
         return self.data
+
     def save(self, data):
         self.data = data
+
 
 def test_create_project():
     # 1️⃣ إنشاء خدمة بدون MongoDB باستخدام MockStorage
