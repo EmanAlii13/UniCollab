@@ -1,6 +1,7 @@
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 
+
 class ProjectService:
     def __init__(self, storage=None, mongo_uri=None, db_name="project_db"):
         """
