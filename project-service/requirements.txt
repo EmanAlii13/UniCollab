@@ -1,0 +1,9 @@
+click
+pytest
+pytest-cov
+black
+isort
+flake8
+pymongo
+python-dotenv
+fastapi
