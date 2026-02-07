@@ -21,8 +21,8 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          timeout: 600          # زيادة المهلة لـ 10 دقائق
-          script_stop: false    # استمر في السكربت لو خطأ
+          timeout: 10m
+          script_stop: false    
           script: |
             cd ~/UniCollab/project-service
             git pull origin main
