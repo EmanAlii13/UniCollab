@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]  # رابط CD مع CI
+    workflows: ["CI Pipeline"]  # ربط CD مع CI
     types:
       - completed
 
@@ -21,8 +21,8 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          timeout: 600          # زيادة المهلة لـ 10 دقائق
-          script_stop: false    # استمر في السكربت لو خطأ
+          timeout: 10m             # الوقت مكتوب بوحدة صحيحة
+          script_stop: false       # يستمر لو صار خطأ
           script: |
             cd ~/UniCollab/project-service
             git pull origin main
