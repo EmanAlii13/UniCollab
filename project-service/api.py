@@ -1,11 +1,11 @@
 import os
+
+from app.services.project_service import ProjectService
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
-
-from app.services.project_service import ProjectService
 
 # =========================
 # Load environment variables
@@ -46,11 +46,12 @@ app = FastAPI(
 # =========================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # مهم جدًا للسيرفر
+    allow_origins=["*"],  # مهم جدًا للسيرفر
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # =========================
 # Schemas
