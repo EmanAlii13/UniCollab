@@ -14,29 +14,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # خطوة 1: نسخ repo
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # خطوة 2: إعداد Python
+      # 2️⃣ Setup Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
-      # خطوة 3: تثبيت dependencies
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r project-service/requirements.txt
+          pip install pytest
 
-      # خطوة 4: ضبط PYTHONPATH
+      # 4️⃣ Set PYTHONPATH for project-service
       - name: Set PYTHONPATH
         run: |
-          echo "PYTHONPATH=$PYTHONPATH:$(pwd)/project-service" >> $GITHUB_ENV
+          echo "PYTHONPATH=$(pwd)/project-service" >> $GITHUB_ENV
 
-      # خطوة 5: تشغيل الاختبارات
-      - name: Run tests
+      # 5️⃣ Run unit & integration tests
+      - name: Run unit & integration tests
+        working-directory: project-service
         run: |
-          cd project-service
-          pytest test --maxfail=1 --disable-warnings -q
+          pytest test --maxfail=1 --disable-warnings -v
