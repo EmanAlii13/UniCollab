@@ -50,7 +50,7 @@ def main():
         result = service.join_project(args.project_id, args.user_id)
         print(result)
 
-    elif args.command == "approve-request":
+    elif args.command == "approved-request":
         result = service.approve_request(args.project_id, args.user_id)
         print(result)
 
