@@ -1,5 +1,6 @@
 # test/test_observer.py
-from project_service.observer_test import Observer
+from app.services.observer import Observer
+
 
 def test_notify():
     obs = Observer()
