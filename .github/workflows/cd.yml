@@ -2,7 +2,7 @@ name: CD Pipeline
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]  # ربط CD مع CI
+    workflows: ["CI Pipeline"]
     types:
       - completed
 
@@ -16,13 +16,14 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Deploy to VM
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          timeout: 10m             # الوقت مكتوب بوحدة صحيحة
-          script_stop: false       # يستمر لو صار خطأ
+          timeout: 600s              # وقت الاتصال بـSSH
+          command_timeout: 1800s     # وقت تنفيذ السكربت بالكامل (30 دقيقة)
+          script_stop: false          # يستمر لو صار خطأ
           script: |
             cd ~/UniCollab/project-service
             git pull origin main
