@@ -14,25 +14,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ Setup Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r project-service/requirements.txt
           pip install pytest
 
+      # 4️⃣ Set PYTHONPATH for project-service
       - name: Set PYTHONPATH
         run: |
           echo "PYTHONPATH=$(pwd)/project-service" >> $GITHUB_ENV
 
+      # 5️⃣ Run unit & integration tests
       - name: Run unit & integration tests
+        working-directory: project-service
         run: |
-          cd project-service
-          pytest tests --maxfail=1 --disable-warnings -v
+          pytest test --maxfail=1 --disable-warnings -v
