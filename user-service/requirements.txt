@@ -1,6 +1,0 @@
-flask
-pymongo
-bcrypt
-pyjwt
-python-dotenv
-pytest
