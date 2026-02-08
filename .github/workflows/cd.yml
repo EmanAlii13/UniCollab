@@ -31,5 +31,6 @@ jobs:
             pip install -r requirements.txt
             # قتل أي uvicorn شغال على البورت 8000
             fuser -k 8000/tcp || true
-            # تشغيل uvicorn
-            uvicorn api:app --host 0.0.0.0 --port 8000 
+            # تشغيل uvicorn في الخلفية مع حفظ اللوج
+            nohup uvicorn api:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+            echo "Deployment complete, uvicorn running in background"
