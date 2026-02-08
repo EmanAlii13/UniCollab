@@ -32,4 +32,4 @@ jobs:
             # قتل أي uvicorn شغال على البورت 8000
             fuser -k 8000/tcp || true
             # تشغيل uvicorn
-            uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+            uvicorn api:app --host 0.0.0.0 --port 8000 
