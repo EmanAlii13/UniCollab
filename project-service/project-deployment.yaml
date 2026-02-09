@@ -13,8 +13,21 @@ spec:
         app: project-service
     spec:
       containers:
-  -  name: project-service
-    image: project-service:latest
-    imagePullPolicy: IfNotPresent
-    ports:
-      - containerPort: 8000
+        - name: project-service
+          image: project-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: project-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: project-service
+  ports:
+    - protocol: TCP
+      port: 80       # البورت الخارجي اللي رح تستخدمه للوصول من الويب
+      targetPort: 8000  # البورت الداخلي داخل الكونتينر
