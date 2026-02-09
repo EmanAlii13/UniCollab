@@ -1,0 +1,36 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          timeout: 600s              # وقت الاتصال بـSSH
+          command_timeout: 1800s     # وقت تنفيذ السكربت بالكامل (30 دقيقة)
+          script_stop: false          # يستمر لو صار خطأ
+          script: |
+            cd ~/UniCollab/project-service
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            # قتل أي uvicorn شغال على البورت 8000
+            fuser -k 8000/tcp || true
+            # تشغيل uvicorn في الخلفية مع حفظ اللوج
+            nohup uvicorn api:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+            echo "Deployment complete, uvicorn running in background"
