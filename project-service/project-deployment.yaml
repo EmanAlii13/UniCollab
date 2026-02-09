@@ -13,7 +13,8 @@ spec:
         app: project-service
     spec:
       containers:
-      - name: project-service
-        image: project-service:latest
-        ports:
-        - containerPort: 8000
+  -  name: project-service
+    image: project-service:latest
+    imagePullPolicy: IfNotPresent
+    ports:
+      - containerPort: 8000
