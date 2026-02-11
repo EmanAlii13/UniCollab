@@ -15,22 +15,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy to VM
+      - name: Deploy Docker container to VM
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
-          timeout: 600s              # وقت الاتصال بـSSH
-          command_timeout: 1800s     # وقت تنفيذ السكربت بالكامل (30 دقيقة)
-          script_stop: false          # يستمر لو صار خطأ
+          timeout: 600s
+          command_timeout: 1800s
+          script_stop: false
           script: |
             cd ~/UniCollab/project-service
             git pull origin main
-            source venv/bin/activate
-            pip install -r requirements.txt
-            # قتل أي uvicorn شغال على البورت 8000
-            fuser -k 8000/tcp || true
-            # تشغيل uvicorn في الخلفية مع حفظ اللوج
-            nohup uvicorn api:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
-            echo "Deployment complete, uvicorn running in background"
+
+            # Build Docker image on server
+            docker build -t unicollab-project-service:latest ./project-service
+
+            # Stop and remove old container if exists
+            docker rm -f project-service-container || true
+
+            # Run new container
+            docker run -d --name project-service-container -p 8000:8000 unicollab-project-service:latest
+            echo "Deployment complete, container running on port 8000"
