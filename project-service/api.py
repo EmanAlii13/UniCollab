@@ -114,6 +114,8 @@ def add_member(project_id: str, member: AddMember):
     if not added:
         raise HTTPException(
             status_code=400,
-            detail="Cannot add member (limit reached or project not found)",
+            detail=(
+                "Cannot add member (limit reached or project not found)"
+            ),
         )
     return {"message": "Member added"}
