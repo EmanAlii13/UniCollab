@@ -8,5 +8,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# ربط الـ router مع التطبيق
+# =========================
+# Health Check Endpoint
+# =========================
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+# =========================
+# Include routers
+# =========================
 app.include_router(auth_router)

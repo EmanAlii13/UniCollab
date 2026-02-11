@@ -3,6 +3,7 @@ fastapi
 uvicorn
 pymongo[srv]
 python-dotenv
-passlib[bcrypt]
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.2
 pytest
 httpx
