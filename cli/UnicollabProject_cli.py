@@ -44,7 +44,7 @@ def update_project(project_id, title=None, description=None):
     print(response.json())
 
 # ====== إعداد CLI ======
-parser = argparse.ArgumentParser(description="UniCollab Project CLI")
+parser = argparse.ArgumentParser(description="UniCollab Projects CLI")
 subparsers = parser.add_subparsers(dest="command")
 
 # ----- User commands -----
