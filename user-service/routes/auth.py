@@ -1,125 +1,138 @@
-# uniCollab - User Service - routes - file: auth.py
-from flask import Blueprint, request, jsonify
-import bcrypt
-import jwt
-import datetime
-from models.user import User
-from config import JWT_SECRET
+# user-service/routes/auth.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Literal
+import logging
 
-auth_bp = Blueprint("auth_bp", __name__)
+from services.user_service import (
+    get_user_by_username,
+    get_user_by_email,
+    verify_password,
+    can_join_project,
+    assign_project_to_user,
+    remove_project_from_user
+)
 
-# ------------------ LOGIN ------------------
-@auth_bp.route("/auth/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    if not data or "email" not in data or "password" not in data:
-        return jsonify({"message": "Email and password required"}), 400
+from database import users_collection
 
-    user_data = User.find_by_email(data["email"])
-    if not user_data:
-        return jsonify({"message": "Invalid credentials"}), 401
+router = APIRouter()
 
-    if not bcrypt.checkpw(data["password"].encode(), user_data["password"].encode()):
-        return jsonify({"message": "Invalid credentials"}), 401
+# =========================
+# Logging
+# =========================
 
-    token_payload = {
-        "user_id": str(user_data["_id"]),
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-    }
-    token = jwt.encode(token_payload, JWT_SECRET, algorithm="HS256")
+logger = logging.getLogger(__name__)
 
-    return jsonify({
-        "message": "Login successful",
-        "token": token,
-        "user": {
-            "id": str(user_data["_id"]),
-            "username": user_data["username"],
-            "email": user_data["email"],
-            "role": user_data.get("role"),
-            "project_id": user_data.get("project_id"),
-            "last_message": user_data.get("last_message"),
-            "join_requests": user_data.get("join_requests", [])
-        }
-    }), 200
+# =========================
+# Models
+# =========================
 
-# ------------------ STATUS ------------------
-@auth_bp.route("/user/status", methods=["GET"])
-def user_status():
-    return jsonify({"status": "User service endpoint working"}), 200
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
-# ------------------ CREATE PROJECT ------------------
-@auth_bp.route("/user/create-project", methods=["POST"])
-def create_project():
-    data = request.get_json()
-    if not data or "user_id" not in data or "project_id" not in data:
-        return jsonify({"message": "user_id and project_id required"}), 400
+class LogoutRequest(BaseModel):
+    email: str
 
-    user = User.find_by_id(data["user_id"])
+class AssignProjectRequest(BaseModel):
+    project_id: str
+    role: Literal["leader", "member"]
+
+# =========================
+# Helper
+# =========================
+
+def serialize_user(user: dict) -> dict:
+    if "_id" in user:
+        user["_id"] = str(user["_id"])
+    return user
+
+# =========================
+# Endpoints
+# =========================
+
+@router.post("/login")
+def login(data: LoginRequest):
+    user = get_user_by_email(data.email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        logger.warning(f"Login attempt failed - user not found: {data.email}")
+        raise HTTPException(status_code=404, detail="User not found")
+    if not verify_password(data.password, user["password"]):
+        logger.warning(f"Login failed - wrong password for: {data.email}")
+        raise HTTPException(status_code=401, detail="Wrong password")
 
-    User.create_project(data["user_id"], data["project_id"])
-    return jsonify({"message": "Project created successfully. User is now the owner"}), 200
+    message = user.get("last_message")
+    if message:
+        users_collection.update_one({"email": data.email}, {"$set": {"last_message": None}})
+        logger.info(f"Cleared last_message for user {data.email}")
 
-# ------------------ JOIN PROJECT ------------------
-@auth_bp.route("/user/join-project", methods=["POST"])
-def join_project():
-    data = request.get_json()
-    if not data or "user_id" not in data or "owner_id" not in data or "project_id" not in data:
-        return jsonify({"message": "user_id, owner_id and project_id required"}), 400
+    logger.info(f"User logged in successfully: {data.email}")
+    return serialize_user({
+        "username": user["username"],
+        "role": user.get("role"),
+        "project_id": user.get("project_id"),
+        "last_message": message
+    })
 
-    user = User.find_by_id(data["user_id"])
-    owner = User.find_by_id(data["owner_id"])
-    if not user or not owner:
-        return jsonify({"message": "User or Owner not found"}), 404
 
-    User.send_join_request(data["user_id"], data["owner_id"])
-    return jsonify({"message": "Join request sent to the project owner"}), 200
-
-# ------------------ ACCEPT JOIN REQUEST ------------------
-@auth_bp.route("/user/accept-request", methods=["POST"])
-def accept_request():
-    data = request.get_json()
-    if not data or "owner_id" not in data or "user_id" not in data or "project_id" not in data:
-        return jsonify({"message": "owner_id, user_id and project_id required"}), 400
-
-    User.accept_join_request(data["owner_id"], data["user_id"], data["project_id"])
-    return jsonify({"message": "User request accepted"}), 200
-
-# ------------------ REJECT JOIN REQUEST ------------------
-@auth_bp.route("/user/reject-request", methods=["POST"])
-def reject_request():
-    data = request.get_json()
-    if not data or "owner_id" not in data or "user_id" not in data or "project_id" not in data:
-        return jsonify({"message": "owner_id, user_id and project_id required"}), 400
-
-    User.reject_join_request(data["owner_id"], data["user_id"], data["project_id"])
-    return jsonify({"message": "User request rejected"}), 200
-
-# ------------------ LEAVE PROJECT ------------------
-@auth_bp.route("/user/leave-project", methods=["POST"])
-def leave_project():
-    data = request.get_json()
-    if not data or "user_id" not in data:
-        return jsonify({"message": "user_id required"}), 400
-
-    user = User.find_by_id(data["user_id"])
+@router.post("/logout")
+def logout(data: LogoutRequest):
+    user = get_user_by_email(data.email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        logger.warning(f"Logout failed - user not found: {data.email}")
+        raise HTTPException(status_code=404, detail="User not found")
 
-    User.leave_project(data["user_id"])
-    return jsonify({"message": "User left the project successfully"}), 200
+    logger.info(f"User logged out: {data.email}")
+    return {"message": f"User {user['username']} logged out successfully."}
 
-# ------------------ UPDATE LAST MESSAGE ------------------
-@auth_bp.route("/user/update-last-message", methods=["POST"])
-def update_last_message():
-    data = request.get_json()
-    if not data or "user_id" not in data or "message" not in data:
-        return jsonify({"message": "user_id and message required"}), 400
 
-    user = User.find_by_id(data["user_id"])
+@router.get("/me")
+def get_user(email: str):
+    user = get_user_by_email(email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        logger.warning(f"/me request - user not found: {email}")
+        raise HTTPException(status_code=404, detail="User not found")
+    logger.info(f"/me accessed for user: {email}")
+    return serialize_user(user)
 
-    User.update_last_message(data["user_id"], data["message"])
-    return jsonify({"message": "Last message updated successfully"}), 200
+
+@router.get("/users/{email}/status")
+def user_status(email: str):
+    user = get_user_by_email(email)
+    if not user:
+        logger.warning(f"Status check failed - user not found: {email}")
+        raise HTTPException(status_code=404, detail="User not found")
+    logger.info(f"Status checked for user: {email}")
+    return serialize_user({
+        "email": user["email"],
+        "project_id": user.get("project_id"),
+        "role": user.get("role"),
+        "can_join_project": user.get("project_id") is None
+    })
+
+
+@router.post("/users/{email}/assign-project")
+def assign_project(email: str, data: AssignProjectRequest):
+    user = get_user_by_email(email)
+    if not user:
+        logger.warning(f"Assign project failed - user not found: {email}")
+        raise HTTPException(status_code=404, detail="User not found")
+    if not can_join_project(email):
+        logger.warning(f"Assign project blocked - user already assigned: {email}")
+        raise HTTPException(status_code=400, detail="User already assigned to a project")
+
+    assign_project_to_user(email, data.project_id, data.role)
+    logger.info(f"Project {data.project_id} assigned to user {email} as {data.role}")
+    return {"message": "Project assigned to user successfully"}
+
+
+@router.post("/users/{email}/remove-project")
+def remove_project(email: str):
+    user = get_user_by_email(email)
+    if not user:
+        logger.warning(f"Remove project failed - user not found: {email}")
+        raise HTTPException(status_code=404, detail="User not found")
+
+    remove_project_from_user(email)
+    logger.info(f"Project removed from user {email}")
+    return {"message": "User removed from project successfully"}

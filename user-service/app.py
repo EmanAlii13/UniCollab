@@ -1,19 +1,21 @@
-# uniCollab - User Service - file: app.py
-from flask import Flask
-from routes.auth import auth_bp
+# user-service/app.py
+from fastapi import FastAPI
+from routes.auth import router as auth_router
 
-app = Flask(__name__)
+app = FastAPI(
+    title="UniCollab User Service",
+    description="User management microservice for UniCollab project system",
+    version="1.0.0"
+)
 
-# Register blueprints
-app.register_blueprint(auth_bp)
+# =========================
+# Health Check Endpoint
+# =========================
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
 
-@app.route("/")
-def home():
-    return {"message": "User Service Running"}
-
-@app.route("/health")
-def health():
-    return {"status": "user-service up"}
-
-if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+# =========================
+# Include routers
+# =========================
+app.include_router(auth_router)

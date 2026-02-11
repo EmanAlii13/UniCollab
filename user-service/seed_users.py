@@ -1,6 +1,5 @@
-# uniCollab - User Service - file: seed_users.py
-# purpose: Seed initial users into the UniCollab User Service database
-import bcrypt
+# user-service/seed_users.py
+from services.user_service import hash_password
 from database import users_collection
 
 students = [
@@ -11,14 +10,16 @@ students = [
     {"username": "student5", "email": "s5@uni.edu", "password": "pass5"},
 ]
 
-def hash_password(pw):
-    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
-
+# تحضير البيانات قبل الإدخال
 for s in students:
     s["password"] = hash_password(s["password"])
     s["role"] = None
     s["project_id"] = None
     s["last_message"] = None
 
-users_collection.insert_many(students)
-print("✅ Users seeded successfully")
+# إدخال البيانات بدون تكرار (idempotent)
+for s in students:
+    if not users_collection.find_one({"email": s["email"]}):
+        users_collection.insert_one(s)
+
+print("✅ Seeded initial students successfully!")
