@@ -9,38 +9,34 @@ def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
 
-    # -----------------------------
     # create-project
-    # -----------------------------
     create = sub.add_parser("create-project")
     create.add_argument("--title", required=True)
     create.add_argument("--desc", required=True)
     create.add_argument("--leader", required=True)
+    create.add_argument("--mongo-uri")  # لو حبيتي MongoDB حقيقية
 
-    # -----------------------------
     # join-project
-    # -----------------------------
     join = sub.add_parser("join-project")
     join.add_argument("--project-id", required=True)
     join.add_argument("--user-id", required=True)
+    join.add_argument("--mongo-uri")
 
-    # -----------------------------
     # approve-request
-    # -----------------------------
     approve = sub.add_parser("approve-request")
     approve.add_argument("--project-id", required=True)
     approve.add_argument("--user-id", required=True)
+    approve.add_argument("--mongo-uri")
 
     args = parser.parse_args()
 
-    # ✅ دعم ملف data مخصص (للاختبارات)
     data_file = os.getenv(
         "PROJECTS_DATA_FILE",
         os.path.join(os.path.dirname(__file__), "..", "data", "projects.json"),
     )
-
     storage = JSONStorage(data_file)
-    service = ProjectService(storage)
+
+    service = ProjectService(storage, mongo_uri=args.mongo_uri)
 
     if args.command == "create-project":
         project_id = service.create_project(args.title, args.desc, args.leader)
@@ -50,7 +46,7 @@ def main():
         result = service.join_project(args.project_id, args.user_id)
         print(result)
 
-    elif args.command == "approved-request":
+    elif args.command == "approve-request":
         result = service.approve_request(args.project_id, args.user_id)
         print(result)
 

@@ -10,5 +10,5 @@ class ProjectFactory:
             "desc": desc,
             "leader": leader,
             "members": [leader],
-            "join_requests": [],
+            "pending_requests": [],
         }
