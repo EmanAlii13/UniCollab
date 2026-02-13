@@ -1,5 +1,5 @@
-from fastapi import FastAPI
 from app.api.v1 import project_endpoints
+from fastapi import FastAPI
 
 app = FastAPI(
     title="UniCollab Project Service",

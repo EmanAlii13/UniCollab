@@ -1,5 +1,6 @@
 import uuid
 
+
 class Project:
     def __init__(self, title, description, leader_id, project_id=None):
         self.project_id = project_id or str(uuid.uuid4())

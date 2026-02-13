@@ -1,6 +1,7 @@
+import uuid
+
 from app.storage.storage_interface import RealStorage
 
-import uuid
 
 class ProjectService:
     def __init__(self, storage: RealStorage):
@@ -13,7 +14,7 @@ class ProjectService:
             "title": title,
             "desc": desc,
             "leader": leader,
-            "members": []
+            "members": [],
         }
         self.storage.save(self.data)
         return project_id

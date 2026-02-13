@@ -2,8 +2,8 @@ import argparse
 import os
 
 from app.services.project_service import ProjectService
-from app.storage.storage_interface import RealStorage
 from app.storage.json_storage import JSONStorage
+from app.storage.storage_interface import RealStorage
 
 
 def main():

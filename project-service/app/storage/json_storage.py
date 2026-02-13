@@ -1,6 +1,8 @@
 import json
 import os
+
 from app.storage.storage_interface import StorageInterface
+
 
 class JSONStorage(StorageInterface):
     def __init__(self, path):

@@ -1,14 +1,16 @@
-from abc import ABC, abstractmethod
-from pymongo import MongoClient
 import os
+from abc import ABC, abstractmethod
+
 from dotenv import load_dotenv
+from pymongo import MongoClient
 
 # تحميل متغيرات البيئة من ملف .env
-load_dotenv()  
+load_dotenv()
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "unicollab")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "projects")
+
 
 class StorageInterface(ABC):
     @abstractmethod
@@ -18,6 +20,7 @@ class StorageInterface(ABC):
     @abstractmethod
     def save(self, data):
         pass
+
 
 class RealStorage(StorageInterface):
     def __init__(self):
@@ -32,7 +35,7 @@ class RealStorage(StorageInterface):
                 "title": doc["title"],
                 "desc": doc["desc"],
                 "leader": doc["leader"],
-                "members": doc.get("members", [])
+                "members": doc.get("members", []),
             }
         return {"projects": projects}
 
@@ -40,11 +43,13 @@ class RealStorage(StorageInterface):
         for project_id, project in data["projects"].items():
             self.collection.update_one(
                 {"_id": project_id},
-                {"$set": {
-                    "title": project["title"],
-                    "desc": project["desc"],
-                    "leader": project["leader"],
-                    "members": project.get("members", [])
-                }},
-                upsert=True
+                {
+                    "$set": {
+                        "title": project["title"],
+                        "desc": project["desc"],
+                        "leader": project["leader"],
+                        "members": project.get("members", []),
+                    }
+                },
+                upsert=True,
             )
