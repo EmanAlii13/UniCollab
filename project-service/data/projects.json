@@ -53,6 +53,36 @@
         "ayat"
       ],
       "pending_requests": []
+    },
+    "7": {
+      "_id": "af86996a-e816-48bc-bf7e-21defe697d2b",
+      "title": "Test",
+      "desc": "Desc",
+      "leader": "Ayat",
+      "members": [
+        "Ayat"
+      ],
+      "pending_requests": []
+    },
+    "8": {
+      "_id": "b3424b9d-9ffb-4d26-ae84-3657d12facd5",
+      "title": "Test cli from project",
+      "desc": "Desc",
+      "leader": "Ayat",
+      "members": [
+        "Ayat"
+      ],
+      "pending_requests": []
+    },
+    "9": {
+      "_id": "26d2838d-f25d-477f-9ebc-af3c907c3d2d",
+      "title": "Test",
+      "desc": "Desc",
+      "leader": "Ayat",
+      "members": [
+        "Ayat"
+      ],
+      "pending_requests": []
     }
   }
 }
