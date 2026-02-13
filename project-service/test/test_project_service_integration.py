@@ -1,5 +1,3 @@
-# tests/test_project_service_integration.py
-
 import os
 import subprocess
 import sys
@@ -9,18 +7,14 @@ import tempfile
 def test_cli_create_join_approve():
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     cli_path = os.path.join(root, "cli", "project_cli.py")
-
-    assert os.path.isfile(cli_path), f"CLI file not found at {cli_path}"
+    assert os.path.isfile(cli_path)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         data_file = os.path.join(tmpdir, "projects.json")
-
-        # 🔹 Environment variables للتأكد أن CLI يستخدم ملف مؤقت
         env = os.environ.copy()
         env["PYTHONPATH"] = root
-        env["PROJECTS_DATA_FILE"] = data_file
+        env["PROJECTS_DATA_FILE"] = data_file  # يمرر للـ CLI
 
-        # 1️⃣ إنشاء مشروع عبر CLI
         result_create = subprocess.run(
             [
                 sys.executable,
@@ -38,4 +32,7 @@ def test_cli_create_join_approve():
             cwd=root,
             env=env,
         )
+
+        # نتأكد من ظهور كلمة نجاح الإنشاء
+        print(result_create.stdout)  # مفيد للتصحيح
         assert "Project created successfully" in result_create.stdout

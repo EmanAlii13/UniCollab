@@ -2,7 +2,8 @@ import argparse
 import os
 
 from app.services.project_service import ProjectService
-from app.services.storage import JSONStorage
+from app.storage.json_storage import JSONStorage
+from app.storage.storage_interface import RealStorage
 
 
 def main():
@@ -14,29 +15,31 @@ def main():
     create.add_argument("--title", required=True)
     create.add_argument("--desc", required=True)
     create.add_argument("--leader", required=True)
-    create.add_argument("--mongo-uri")  # لو حبيتي MongoDB حقيقية
 
     # join-project
     join = sub.add_parser("join-project")
     join.add_argument("--project-id", required=True)
     join.add_argument("--user-id", required=True)
-    join.add_argument("--mongo-uri")
 
     # approve-request
     approve = sub.add_parser("approve-request")
     approve.add_argument("--project-id", required=True)
     approve.add_argument("--user-id", required=True)
-    approve.add_argument("--mongo-uri")
 
     args = parser.parse_args()
 
+    # اختيار الـ storage:
     data_file = os.getenv(
         "PROJECTS_DATA_FILE",
         os.path.join(os.path.dirname(__file__), "..", "data", "projects.json"),
     )
-    storage = JSONStorage(data_file)
 
-    service = ProjectService(storage, mongo_uri=args.mongo_uri)
+    if os.path.exists(data_file):
+        storage = JSONStorage(data_file)  # Integration test تستخدم ملف مؤقت
+    else:
+        storage = RealStorage()  # MongoDB في البيئة الحقيقية
+
+    service = ProjectService(storage=storage)
 
     if args.command == "create-project":
         project_id = service.create_project(args.title, args.desc, args.leader)

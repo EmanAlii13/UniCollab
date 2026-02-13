@@ -1,8 +1,10 @@
 import json
 import os
 
+from app.storage.storage_interface import StorageInterface
 
-class JSONStorage:
+
+class JSONStorage(StorageInterface):
     def __init__(self, path):
         self.path = path
         os.makedirs(os.path.dirname(path), exist_ok=True)
