@@ -1,11 +1,17 @@
-# cli/project_cli.py
+# cli/UnicollabProject_cli.py
 import argparse
 import requests
+import os
 
-API_PROJECT = "http://localhost:8000/api/v1/projects"
-API_USER = "http://localhost:8001/api/v1/auth"  
+# =========================
+# إعداد URLs للـ APIs
+# =========================
+API_PROJECT = os.getenv("API_PROJECT", "http://localhost:8000/api/v1/projects/")
+API_USER = os.getenv("API_USER", "http://localhost:8001/api/v1/auth")
 
-# ====== وظائف CLI ======
+# =========================
+# وظائف User Service
+# =========================
 def login(email, password):
     response = requests.post(f"{API_USER}/login", json={"email": email, "password": password})
     print(response.json())
@@ -14,8 +20,15 @@ def logout():
     response = requests.post(f"{API_USER}/logout")
     print(response.json())
 
+# =========================
+# وظائف Project Service
+# =========================
 def create_project(title, description, leader):
-    response = requests.post(API_PROJECT, json={"title": title, "description": description, "leader": leader})
+    response = requests.post(API_PROJECT, json={
+        "title": title,
+        "description": description,  # ✅ الاسم الصحيح
+        "leader": leader
+    })
     print(response.json())
 
 def list_projects():
@@ -24,27 +37,31 @@ def list_projects():
     for pid, p in projects.items():
         print(f"{p['title']} ({len(p['members'])} members)")
 
-def join_project(project_id):
-    response = requests.post(f"{API_PROJECT}/{project_id}/members", json={"username": "ayat"})
+def join_project(project_id, username):
+    response = requests.post(f"{API_PROJECT}{project_id}/members", json={"member_name": username})
     print(response.json())
 
 def view_requests(project_id):
-    response = requests.get(f"{API_PROJECT}/{project_id}/requests")
+    response = requests.get(f"{API_PROJECT}{project_id}/requests")
     print(response.json())
 
 def approve_request(project_id, username, approve=True):
-    response = requests.post(f"{API_PROJECT}/{project_id}/approve", json={"username": username, "approve": approve})
+    response = requests.post(f"{API_PROJECT}{project_id}/approve", json={"username": username, "approve": approve})
     print(response.json())
 
 def update_project(project_id, title=None, description=None):
     data = {}
-    if title: data["title"] = title
-    if description: data["description"] = description
-    response = requests.put(f"{API_PROJECT}/{project_id}", json=data)
+    if title:
+        data["title"] = title
+    if description:
+        data["description"] = description  # ✅ الاسم الصحيح
+    response = requests.put(f"{API_PROJECT}{project_id}", json=data)
     print(response.json())
 
-# ====== إعداد CLI ======
-parser = argparse.ArgumentParser(description="UniCollab Projects CLI")
+# =========================
+# إعداد CLI
+# =========================
+parser = argparse.ArgumentParser(description="UniCollab CLI (User & Project Services)")
 subparsers = parser.add_subparsers(dest="command")
 
 # ----- User commands -----
@@ -64,6 +81,7 @@ list_parser = subparsers.add_parser("list-projects", help="List all projects")
 
 join_parser = subparsers.add_parser("join-project", help="Join a project")
 join_parser.add_argument("--project-id", required=True)
+join_parser.add_argument("--username", required=True)
 
 view_req_parser = subparsers.add_parser("view-requests", help="View join requests")
 view_req_parser.add_argument("--project-id", required=True)
@@ -78,7 +96,9 @@ update_parser.add_argument("--project-id", required=True)
 update_parser.add_argument("--title")
 update_parser.add_argument("--description")
 
-# ====== تنفيذ CLI ======
+# =========================
+# تنفيذ CLI
+# =========================
 args = parser.parse_args()
 
 if args.command == "login":
@@ -90,7 +110,7 @@ elif args.command == "create-project":
 elif args.command == "list-projects":
     list_projects()
 elif args.command == "join-project":
-    join_project(args.project_id)
+    join_project(args.project_id, args.username)
 elif args.command == "view-requests":
     view_requests(args.project_id)
 elif args.command == "approve-request":
