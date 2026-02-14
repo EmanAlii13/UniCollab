@@ -70,7 +70,7 @@ def create_project_flow():
     print("✅ Project created successfully!\n")
 
 # =========================
-# Option 2: Join Project (تصحيح فقط إرسال العضو)
+# Option 2: Join Project
 # =========================
 def join_project_flow():
     if not can_join_project(current_user.get("email")):
@@ -84,21 +84,21 @@ def join_project_flow():
     print("\nAvailable Projects:")
     for pid in project_ids:
         project = projects_dict[pid]
-        # ⚡ عرض المشروع مع الـID مباشرة
         print(f"{pid}: {project['title']} ({project['desc']})")
     project_id = input("Enter the project ID to join: ")
     try:
         if project_id not in project_ids:
             raise ValueError("Invalid project ID")
-        # ⚡ إرسال البريد كمفتاح 'member_name' كما يتطلب السيرفر
+        # إرسال البريد كما يتطلب project-service
         add_member(project_id, current_user.get("email"))
+        # ثم تعيين المشروع عند المستخدم
         assign_project(current_user.get("email"), project_id, "member")
         print("✅ Successfully joined the project!\n")
     except Exception as e:
         print(f"❌ Failed to join project: {e}\n")
 
 # =========================
-# باقي الخيارات بدون أي تغيير
+# Option 3: Update Project
 # =========================
 def update_project_flow():
     me = get_me(current_user.get("email"))
