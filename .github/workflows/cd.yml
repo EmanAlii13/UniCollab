@@ -1,3 +1,4 @@
+# CD Pipeline
 name: CD Pipeline
 
 on:
@@ -15,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy Docker container to VM
+      - name: Deploy Docker containers via docker-compose
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VM_HOST }}
@@ -25,15 +26,9 @@ jobs:
           command_timeout: 1800s
           script_stop: false
           script: |
-            cd ~/UniCollab/project-service
+            cd ~/UniCollab
             git pull origin main
-
-            # Build Docker image on server
-            docker build -t unicollab-project-service:latest ./project-service
-
-            # Stop and remove old container if exists
-            docker rm -f project-service-container || true
-
-            # Run new container
-            docker run -d --name project-service-container -p 8000:8000 unicollab-project-service:latest
-            echo "Deployment complete, container running on port 8000"
+            docker-compose -f docker-compose.yml build
+            docker-compose -f docker-compose.yml down
+            docker-compose -f docker-compose.yml up -d
+            echo "Deployment complete, all services running!"

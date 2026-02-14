@@ -1,85 +1,44 @@
 version: "3.9"
 
 services:
-  # =========================
-  # User Service - 3 replicas
-  # =========================
-  user-service-1:
-    build:
-      context: ./user-service
-    container_name: user-service-1
-    ports:
-      - "8001:8001"
-    env_file:
-      - ./user-service/.env
-    command: uvicorn app:app --host 0.0.0.0 --port 8001
-    restart: always
-    networks:
-      - unicollab-network
-
-  user-service-2:
-    build:
-      context: ./user-service
-    container_name: user-service-2
-    ports:
-      - "8002:8001"
-    env_file:
-      - ./user-service/.env
-    command: uvicorn app:app --host 0.0.0.0 --port 8001
-    restart: always
-    networks:
-      - unicollab-network
-
-  user-service-3:
-    build:
-      context: ./user-service
-    container_name: user-service-3
-    ports:
-      - "8003:8001"
-    env_file:
-      - ./user-service/.env
-    command: uvicorn app:app --host 0.0.0.0 --port 8001
-    restart: always
-    networks:
-      - unicollab-network
-
-  # =========================
-  # Nginx Load Balancer for User Service
-  # =========================
-  nginx:
-    image: nginx:latest
-    container_name: user-service-nginx
-    ports:
-      - "8080:80"
-    volumes:
-      - ./user-service/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - user-service-1
-      - user-service-2
-      - user-service-3
-    restart: always
-    networks:
-      - unicollab-network
-
-  # =========================
-  # Project Service
-  # =========================
   project-service:
     build:
       context: ./project-service
     container_name: project-service
     ports:
       - "8000:8000"
-    env_file:
-      - ./project-service/.env
-    command: uvicorn app.api.api:app --host 0.0.0.0 --port 8000
     restart: always
-    networks:
-      - unicollab-network
 
-# =========================
-# Shared network
-# =========================
-networks:
-  unicollab-network:
-    driver: bridge
+  user-service-1:
+    build:
+      context: ./user-service
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
+    container_name: user-service-1
+    restart: always
+
+  user-service-2:
+    build:
+      context: ./user-service
+    command: uvicorn app:app --host 0.0.0.0 --port 8002
+    container_name: user-service-2
+    restart: always
+
+  user-service-3:
+    build:
+      context: ./user-service
+    command: uvicorn app:app --host 0.0.0.0 --port 8003
+    container_name: user-service-3
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: user-service-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - user-service-1
+      - user-service-2
+      - user-service-3
+    restart: always

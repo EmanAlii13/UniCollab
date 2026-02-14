@@ -1,43 +1,50 @@
 services:
   user-service-1:
-    build: .
+    build: ./user-service
     container_name: user-service-1
     ports:
       - "8001:8001"
-    env_file:
-      - .env
-    command: uvicorn app:app --host 0.0.0.0 --port 8001
-    restart: always
+    networks:
+      - unicollab-network
 
   user-service-2:
-    build: .
+    build: ./user-service
     container_name: user-service-2
     ports:
-      - "8002:8002"
-    env_file:
-      - .env
-    command: uvicorn app:app --host 0.0.0.0 --port 8002
-    restart: always
+      - "8002:8001"
+    networks:
+      - unicollab-network
 
   user-service-3:
-    build: .
+    build: ./user-service
     container_name: user-service-3
     ports:
-      - "8003:8003"
-    env_file:
-      - .env
-    command: uvicorn app:app --host 0.0.0.0 --port 8003
-    restart: always
+      - "8003:8001"
+    networks:
+      - unicollab-network
 
-  nginx:
+  project-service:
+    build: ./project-service
+    container_name: project-service
+    ports:
+      - "8000:8000"
+    networks:
+      - unicollab-network
+
+  user-service-nginx:
     image: nginx:latest
     container_name: user-service-nginx
     ports:
       - "8080:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - user-service-1
       - user-service-2
       - user-service-3
-    restart: always
+    networks:
+      - unicollab-network
+
+networks:
+  unicollab-network:
+    driver: bridge
