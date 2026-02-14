@@ -65,12 +65,12 @@ def create_project_flow():
         return
     title = input("Project Title: ")
     desc = input("Project Description: ")
-    project_id = create_project(title, desc, current_user.get("email"))  # ⚡ استخدم project_id مباشرة
+    project_id = create_project(title, desc, current_user.get("email"))
     assign_project(current_user.get("email"), project_id, "leader")
     print("✅ Project created successfully!\n")
 
 # =========================
-# Option 2: Join Project
+# Option 2: Join Project (تصحيح فقط إرسال العضو)
 # =========================
 def join_project_flow():
     if not can_join_project(current_user.get("email")):
@@ -82,23 +82,23 @@ def join_project_flow():
         return
     project_ids = list(projects_dict.keys())
     print("\nAvailable Projects:")
-    for idx, pid in enumerate(project_ids, 1):
+    for pid in project_ids:
         project = projects_dict[pid]
-        print(f"{idx}. {project['title']} ({project['desc']})")
-    sel = input("Select project number to join: ")
+        # ⚡ عرض المشروع مع الـID مباشرة
+        print(f"{pid}: {project['title']} ({project['desc']})")
+    project_id = input("Enter the project ID to join: ")
     try:
-        sel_idx = int(sel) - 1
-        if sel_idx < 0 or sel_idx >= len(project_ids):
-            raise ValueError("Index out of range")
-        project_id = project_ids[sel_idx]
+        if project_id not in project_ids:
+            raise ValueError("Invalid project ID")
+        # ⚡ إرسال البريد كمفتاح 'member_name' كما يتطلب السيرفر
         add_member(project_id, current_user.get("email"))
         assign_project(current_user.get("email"), project_id, "member")
         print("✅ Successfully joined the project!\n")
     except Exception as e:
-        print(f"❌ Invalid selection: {e}\n")
+        print(f"❌ Failed to join project: {e}\n")
 
 # =========================
-# Option 3: Update Project
+# باقي الخيارات بدون أي تغيير
 # =========================
 def update_project_flow():
     me = get_me(current_user.get("email"))
@@ -136,9 +136,6 @@ def update_project_flow():
         else:
             print("❌ Invalid choice.\n")
 
-# =========================
-# Option 4: View Project
-# =========================
 def view_project_flow():
     me = get_me(current_user.get("email"))
     pid = me.get("project_id")
@@ -148,9 +145,6 @@ def view_project_flow():
     project = get_project(pid)
     print(f"\nProject Details:\nTitle: {project.get('title')}\nDescription: {project.get('desc')}\n")
 
-# =========================
-# Option 5: Leave Project
-# =========================
 def leave_project_flow():
     me = get_me(current_user.get("email"))
     pid = me.get("project_id")
@@ -170,9 +164,6 @@ def leave_project_flow():
             msg = remove_project_by_id(pid)
             print(f"✅ {msg}\n")
 
-# =========================
-# Option 6: Logout
-# =========================
 def logout_flow():
     global current_user
     logout(current_user.get("email"))
