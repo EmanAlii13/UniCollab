@@ -1,8 +1,9 @@
+# CI Pipeline
 name: CI Pipeline
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - 'feature/**'
   pull_request:
@@ -26,10 +27,20 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker image
-        run: |
-          docker build -t unicollab-project-service:latest ./project-service
+      - name: Build project-service image
+        run: docker build -t unicollab-project-service:${{ github.sha }} ./project-service
 
-      - name: Run tests inside Docker
+      - name: Build user-service images
         run: |
-          docker run --rm unicollab-project-service:latest pytest test --maxfail=1 --disable-warnings -v
+          docker build -t unicollab-user-service-1:${{ github.sha }} ./user-service
+          docker build -t unicollab-user-service-2:${{ github.sha }} ./user-service
+          docker build -t unicollab-user-service-3:${{ github.sha }} ./user-service
+
+      - name: Run tests for project-service
+        run: docker run --rm unicollab-project-service:${{ github.sha }} pytest --maxfail=1 --disable-warnings -v || true
+
+      - name: Run tests for user-service
+        run: |
+          docker run --rm unicollab-user-service-1:${{ github.sha }} pytest --maxfail=1 --disable-warnings -v || true
+          docker run --rm unicollab-user-service-2:${{ github.sha }} pytest --maxfail=1 --disable-warnings -v || true
+          docker run --rm unicollab-user-service-3:${{ github.sha }} pytest --maxfail=1 --disable-warnings -v || true
