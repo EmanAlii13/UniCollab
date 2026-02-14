@@ -1,5 +1,5 @@
-from fastapi import FastAPI
 from app.api.v1.project_endpoints import router as project_router
+from fastapi import FastAPI
 
 app = FastAPI(
     title="UniCollab Project Service",
@@ -10,8 +10,4 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-app.include_router(
-    project_router,
-    prefix="/api/v1/projects",
-    tags=["Projects"]
-)
+app.include_router(project_router, prefix="/api/v1/projects", tags=["Projects"])
