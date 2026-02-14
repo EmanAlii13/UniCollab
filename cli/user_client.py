@@ -1,7 +1,7 @@
 # UniCollab - CLI - user_client.py
 import requests
 
-USER_SERVICE_URL = "http://localhost:8001"  # Localhost for User Service
+USER_SERVICE_URL = "http://localhost:8080"  # Localhost for User Service
 
 def login(email, password):
     resp = requests.post(f"{USER_SERVICE_URL}/login", json={"email": email, "password": password})

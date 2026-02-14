@@ -1,3 +1,4 @@
+# UniCollab - user-service - Dockerfile
 # =========================
 # Base image
 # =========================

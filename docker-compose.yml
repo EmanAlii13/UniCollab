@@ -1,9 +1,12 @@
 version: "3.9"
 
 services:
-
+  # =========================
+  # User Service - 3 replicas
+  # =========================
   user-service-1:
-    build: ./user-service
+    build:
+      context: ./user-service
     container_name: user-service-1
     ports:
       - "8001:8001"
@@ -11,27 +14,38 @@ services:
       - ./user-service/.env
     command: uvicorn app:app --host 0.0.0.0 --port 8001
     restart: always
+    networks:
+      - unicollab-network
 
   user-service-2:
-    build: ./user-service
+    build:
+      context: ./user-service
     container_name: user-service-2
     ports:
-      - "8002:8002"
+      - "8002:8001"
     env_file:
       - ./user-service/.env
-    command: uvicorn app:app --host 0.0.0.0 --port 8002
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
     restart: always
+    networks:
+      - unicollab-network
 
   user-service-3:
-    build: ./user-service
+    build:
+      context: ./user-service
     container_name: user-service-3
     ports:
-      - "8003:8003"
+      - "8003:8001"
     env_file:
       - ./user-service/.env
-    command: uvicorn app:app --host 0.0.0.0 --port 8003
+    command: uvicorn app:app --host 0.0.0.0 --port 8001
     restart: always
+    networks:
+      - unicollab-network
 
+  # =========================
+  # Nginx Load Balancer for User Service
+  # =========================
   nginx:
     image: nginx:latest
     container_name: user-service-nginx
@@ -44,3 +58,28 @@ services:
       - user-service-2
       - user-service-3
     restart: always
+    networks:
+      - unicollab-network
+
+  # =========================
+  # Project Service
+  # =========================
+  project-service:
+    build:
+      context: ./project-service
+    container_name: project-service
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./project-service/.env
+    command: uvicorn app.api.api:app --host 0.0.0.0 --port 8000
+    restart: always
+    networks:
+      - unicollab-network
+
+# =========================
+# Shared network
+# =========================
+networks:
+  unicollab-network:
+    driver: bridge
